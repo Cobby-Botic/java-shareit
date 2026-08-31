@@ -1,9 +1,12 @@
 package ru.practicum.shareit.item.model;
 
+import lombok.Data;
+
+@Data
 public class Item {
-    private int id;
+    private Long id;
     private String name;
     private String description;
-    private int owner;
-    private int requestId;
+    private Long owner;
+    private Boolean available;
 }

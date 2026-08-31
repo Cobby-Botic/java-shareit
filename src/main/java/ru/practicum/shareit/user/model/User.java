@@ -1,12 +1,18 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-@AllArgsConstructor
 public class User {
-    private int id;
+    private Long id;
+    @NotBlank
     private String name;
+    @Email(message = "Некорректно указан email")
+    @NotBlank
     private String email;
+    private List<Review> reviews;
 }
