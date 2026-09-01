@@ -82,9 +82,10 @@ public class InMemoryItemRepository implements ItemRepository {
         Set<ItemDto> itemsDto = new HashSet<>();
 
         items.stream()
+
                 .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase())
                         || item.getDescription().toLowerCase().contains(text.toLowerCase())
-                        && item.getAvailable().equals(true))
+                        && Boolean.TRUE.equals(item.getAvailable()))
                 .forEach(item -> itemsDto.add(createItemDto(item)));
 
         return itemsDto;
