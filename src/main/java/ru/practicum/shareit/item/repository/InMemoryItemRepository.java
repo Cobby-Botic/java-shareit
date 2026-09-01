@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.ItemAlreadyExistsException;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
+@Repository
 public class InMemoryItemRepository implements ItemRepository {
 
     private static Long itemId = 1L;
