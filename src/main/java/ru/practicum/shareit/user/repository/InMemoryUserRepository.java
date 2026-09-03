@@ -61,7 +61,7 @@ public class InMemoryUserRepository implements UserRepository {
             checkDuplicateEmail(user, userId);
             currentUser.setEmail(user.getEmail());
         }
-        return UserMapper.toUserDto(user);
+        return UserMapper.toUserDto(currentUser);
     }
 
     @Override
