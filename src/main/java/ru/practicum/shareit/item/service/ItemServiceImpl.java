@@ -4,10 +4,11 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -28,23 +29,26 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto updateItem(Item item, Long userId, Long itemId) {
+    public ItemDto updateItem(ItemDto item, Long userId, Long itemId) {
         return itemRepository.updateItem(item, userId, itemId);
     }
 
     @Override
-    public ItemDto addItem(Item item, Long userId) {
+    public ItemDto addItem(ItemDto item, Long userId) {
         userRepository.getUserById(userId);
         return itemRepository.addItem(item, userId);
     }
 
     @Override
-    public Set<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(String text) {
+        if (text.isBlank()) {
+            return new ArrayList<>();
+        }
         return itemRepository.searchItem(text);
     }
 
     @Override
-    public ItemDto deleteItem(Item item, Long userId) {
+    public ItemDto deleteItem(ItemDto item, Long userId) {
         return itemRepository.deleteItem(item, userId);
     }
 }

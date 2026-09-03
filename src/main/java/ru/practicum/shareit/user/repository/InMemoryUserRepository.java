@@ -2,52 +2,55 @@ package ru.practicum.shareit.user.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.exception.AlreadyExistsException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.EmailDuplicateException;
-import ru.practicum.shareit.user.exception.UserAlreadyExistsException;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.Review;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
 public class InMemoryUserRepository implements UserRepository {
 
     private static Long userId = 1L;
-    private final Set<User> users = new HashSet<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @Override
     public UserDto getUserById(Long id) {
         User user = findUser(id);
         log.info("Поиск user: " + user);
 
-        return createUserDto(user);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
-    public Set<UserDto> getUsers() {
-        Set<UserDto> usersDto = new HashSet<>();
-        users.forEach(user -> usersDto.add(createUserDto(user)));
+    public List<UserDto> getUsers() {
+        List<UserDto> usersDto = new ArrayList<>();
+        users.values()
+                .forEach(user -> usersDto.add(UserMapper.toUserDto(user)));
 
         return usersDto;
     }
 
     @Override
-    public UserDto addUser(User user) {
+    public UserDto addUser(UserDto userDto) {
+        User user = UserMapper.toUser(userDto);
         checkOnExist(user);
         checkDuplicateEmail(user, user.getId());
         user.setId(userId++);
-        users.add(user);
+        users.put(user.getId(), user);
         log.info("User: " + user.getId() + " добавлен");
 
-        return createUserDto(user);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
-    public UserDto updateUser(User user, Long userId) {
+    public UserDto updateUser(UserDto userDto, Long userId) {
+        User user = UserMapper.toUser(userDto);
         User currentUser = findUser(userId);
 
         if (user.getName() != null) {
@@ -58,13 +61,13 @@ public class InMemoryUserRepository implements UserRepository {
             checkDuplicateEmail(user, userId);
             currentUser.setEmail(user.getEmail());
         }
-        return createUserDto(currentUser);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
     public void deleteUser(Long userId) {
         User user = findUser(userId);
-        users.remove(user);
+        users.remove(userId);
         log.info("User: " + userId + " удален");
     }
 
@@ -74,34 +77,29 @@ public class InMemoryUserRepository implements UserRepository {
         user.getReviews().add(review);
         log.info("Отзыв: " + review.getId() + " для User: " + userId);
 
-        return createUserDto(user);
-    }
-
-    private UserDto createUserDto(User user) {
-        return new UserDto(user.getId(), user.getName(), user.getEmail());
+        return UserMapper.toUserDto(user);
     }
 
     private void checkDuplicateEmail(User user, Long userId) {
-        users.stream()
-                .filter(currentUser -> currentUser.getEmail().equals(user.getEmail()))
-                .forEach(currentUser -> {
-                    if (!currentUser.getId().equals(userId)) {
-                        throw new EmailDuplicateException("User с такой почтой уже существует");
-                    }
-                });
+        users.values().stream()
+                        .filter(currentUser -> currentUser.getEmail().equals(user.getEmail()))
+                                .forEach(currentUser -> {
+                                    if (!currentUser.getId().equals(userId)) {
+                                        throw new EmailDuplicateException("User с такой почтой уже существует");
+                                    }
+                                });
     }
 
     private void checkOnExist(User user) {
-        if (users.stream()
-                .anyMatch(currentUser -> currentUser.getId().equals(user.getId()))) {
-            throw new UserAlreadyExistsException("User с id: " + user.getId() + " уже существует");
+        if (users.containsKey(user.getId())) {
+            throw new AlreadyExistsException("User с id: " + user.getId() + " уже существует");
         }
     }
 
     private User findUser(Long id) {
-        return users.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new UserNotFoundException("User: " + id + " не найден"));
+        if (!users.containsKey(id)) {
+            throw new NotFoundException("User с id " + id + " не найден");
+        }
+        return users.get(id);
     }
 }

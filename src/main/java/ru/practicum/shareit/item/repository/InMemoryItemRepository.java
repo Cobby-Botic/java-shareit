@@ -2,50 +2,52 @@ package ru.practicum.shareit.item.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.AlreadyExistsException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.exception.ItemAlreadyExistsException;
-import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.exception.NotOwnerException;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Repository
 public class InMemoryItemRepository implements ItemRepository {
 
     private static Long itemId = 1L;
-    private final Set<Item> items = new HashSet<>();
+    private final Map<Long, Item> items = new HashMap<>();
 
     @Override
     public ItemDto getItemById(Long id) {
         Item item = findItem(id);
         log.info("Поиск item: " + item);
-        return createItemDto(item);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
     public Set<ItemDto> getAllItems(Long userId) {
         Set<ItemDto> itemsDto = new HashSet<>();
 
-        items.stream()
-                .filter(item -> item.getOwner().equals(userId))
-                .forEach(item -> itemsDto.add(createItemDto(item)));
+        items.values().stream()
+                        .filter(item -> item.getOwner().equals(userId))
+                                .forEach(item -> itemsDto.add(ItemMapper.toItemDto(item)));
         return itemsDto;
     }
 
     @Override
-    public ItemDto addItem(Item item, Long userid) {
+    public ItemDto addItem(ItemDto itemDto, Long userid) {
+        Item item = ItemMapper.toItem(itemDto);
         checkOnExist(item);
         item.setId(itemId++);
         item.setOwner(userid);
-        items.add(item);
-        return createItemDto(item);
+        items.put(item.getId(), item);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public ItemDto updateItem(Item item, Long userId, Long itemId) {
+    public ItemDto updateItem(ItemDto itemDto, Long userId, Long itemId) {
+        Item item = ItemMapper.toItem(itemDto);
         Item currentItem = findItem(itemId);
         checkItemOwner(currentItem, userId);
 
@@ -70,52 +72,46 @@ public class InMemoryItemRepository implements ItemRepository {
         }
         log.info("Item : " + itemId + " updated");
 
-        return createItemDto(currentItem);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public Set<ItemDto> searchItem(String text) {
-        if (text.isBlank()) {
-            return new HashSet<>();
-        }
+    public List<ItemDto> searchItem(String text) {
 
-        Set<ItemDto> itemsDto = new HashSet<>();
+        List<ItemDto> itemsDto = new ArrayList<>();
 
-        items.stream()
-                .filter(item ->
-                        (item.getName().toLowerCase().contains(text.toLowerCase())
+        items.values().stream()
+                        .filter(item ->
+                                (item.getName().toLowerCase().contains(text.toLowerCase())
                                 || item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                                && Boolean.TRUE.equals(item.getAvailable()))
-                .forEach(item -> itemsDto.add(createItemDto(item)));
+                                        && Boolean.TRUE.equals(item.getAvailable()))
+                                .forEach(item -> itemsDto.add(ItemMapper.toItemDto(item)));
 
         return itemsDto;
     }
 
     @Override
-    public ItemDto deleteItem(Item item, Long userId) {
+    public ItemDto deleteItem(ItemDto itemDto, Long userId) {
+        Item item = ItemMapper.toItem(itemDto);
         findItem(item.getId());
         checkItemOwner(item, userId);
-        items.remove(item);
+        items.remove(item.getId());
         log.info("Item : " + item.getId() + " удален");
 
-        return createItemDto(item);
-    }
-
-    private ItemDto createItemDto(Item item) {
-        return new ItemDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(), item.getOwner());
+        return ItemMapper.toItemDto(item);
     }
 
     private Item findItem(Long id) {
-        return items.stream()
-                .filter(item -> item.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException("Item: " + id + " не найден"));
+        if (!items.containsKey(id)) {
+            throw new NotFoundException("Item: " + id + " не найден");
+        }
+
+        return items.get(id);
     }
 
     private void checkOnExist(Item item) {
-        if (items.stream()
-                .anyMatch(currentItem -> currentItem.getId().equals(item.getId()))) {
-            throw new ItemAlreadyExistsException("Item : " + item.getId() + " уже существует");
+        if (items.containsKey(item.getId())) {
+            throw new AlreadyExistsException("Item : " + item.getId() + " уже существует");
         }
     }
 

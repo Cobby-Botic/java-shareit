@@ -1,46 +1,32 @@
-package ru.practicum.shareit.Handler;
+package ru.practicum.shareit.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.item.exception.ItemAlreadyExistsException;
-import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.AlreadyExistsException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.exception.NotOwnerException;
 import ru.practicum.shareit.user.exception.EmailDuplicateException;
-import ru.practicum.shareit.user.exception.UserAlreadyExistsException;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
 
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFoundException(UserNotFoundException e) {
+    public ErrorResponse handleNotFoundException(NotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler(AlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleUserAlreadyExistException(UserAlreadyExistsException e) {
+    public ErrorResponse handleAlreadyExistException(AlreadyExistsException e) {
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(EmailDuplicateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleEmailDuplicateException(EmailDuplicateException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler(ItemAlreadyExistsException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleItemAlreadyExistException(ItemAlreadyExistsException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler(ItemNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleItemNotFoundException(ItemNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 
