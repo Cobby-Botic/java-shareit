@@ -35,7 +35,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(ItemDto item, Long userId) {
-        userRepository.getUserById(userId);
+        //userRepository.getUserById(userId);
         return itemRepository.addItem(item, userId);
     }
 
