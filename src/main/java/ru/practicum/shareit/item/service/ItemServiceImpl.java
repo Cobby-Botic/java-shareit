@@ -7,16 +7,26 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidateException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.NotOwnerException;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,15 +36,52 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
-    public ItemDto getItemById(Long id) {
-        log.info("Поиск item c id: " + id);
-        Item item = itemRepository.findById(id)
+    public ItemDto getItemById(Long itemId, Long userId) {
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(
-                        "Item с ID = " + id + " не существует"
+                        "Item с id: " + itemId + " не существует"
                 ));
-        return ItemMapper.toItemDto(item);
+
+        ItemDto itemDto = ItemMapper.toItemDto(item);
+
+        List<CommentDto> comments = commentRepository.findAllByItemId(itemId)
+                .stream()
+                .map(CommentMapper::toCommentDto)
+                .toList();
+
+        itemDto.setComments(comments);
+
+        if (item.getOwner().equals(userId)) {
+            LocalDateTime now = LocalDateTime.now();
+
+            bookingRepository
+                    .findFirstByItemIdAndEndBeforeOrderByEndDesc(itemId, now)
+                    .ifPresent(booking ->
+                            itemDto.setLastBooking(
+                                    new BookingShortDto(
+                                            booking.getId(),
+                                            booking.getBooker().getId()
+                                    )
+                            )
+                    );
+
+            bookingRepository
+                    .findFirstByItemIdAndStartAfterOrderByStartAsc(itemId, now)
+                    .ifPresent(booking ->
+                            itemDto.setNextBooking(
+                                    new BookingShortDto(
+                                            booking.getId(),
+                                            booking.getBooker().getId()
+                                    )
+                            )
+                    );
+        }
+
+        return itemDto;
     }
 
     @Override
@@ -124,6 +171,43 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.delete(item);
 
         return ItemMapper.toItemDto(item);
+    }
+
+    @Transactional
+    @Override
+    public CommentDto createComment(Long userId, Long itemId, Map<String, String> body) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(
+                        "User с id: " + userId + " не существует"
+                ));
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Item с id: " + itemId + " не существует"
+                ));
+
+        boolean hasCompletedBooking = bookingRepository
+                .existsByBookerIdAndItemIdAndEndBefore(
+                        userId,
+                        itemId,
+                        LocalDateTime.now()
+                );
+
+        if (!hasCompletedBooking) {
+            throw new ValidateException(
+                    "Пользователь не может оставить отзыв на эту вещь"
+            );
+        }
+
+        Comment comment = new Comment();
+        comment.setItem(item);
+        comment.setAuthor(user);
+        comment.setText(body.get("text"));
+        comment.setCreated(LocalDateTime.now());
+
+        Comment savedComment = commentRepository.save(comment);
+
+        return CommentMapper.toCommentDto(savedComment);
     }
 
     private void checkItemOwner(Item item, Long userId) {
