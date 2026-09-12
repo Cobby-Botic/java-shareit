@@ -4,10 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -20,7 +22,7 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ItemDto getItemById(@PathVariable("itemId") Long itemId,
                                @RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getItemById(itemId);
+        return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping
@@ -42,6 +44,15 @@ public class ItemController {
         log.info("Добавление item: {}, owner {}", item, userId);
         return itemService.addItem(item, userId);
     }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createComment(@PathVariable("itemId") Long itemId,
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @RequestBody Map<String, String> body) {
+        log.info("Добавление комментария к вещи " + itemId);
+        return itemService.createComment(userId, itemId, body);
+    }
+
 
     @DeleteMapping
     public ItemDto deleteItem(@RequestBody ItemDto item,
