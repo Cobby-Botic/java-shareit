@@ -51,6 +51,7 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(user);
     }
 
+    @Transactional
     @Override
     public UserDto updateUser(UserDto userDto, Long userId) {
 
@@ -75,6 +76,7 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(currentUser);
     }
 
+    @Transactional
     @Override
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User с id " +

@@ -16,5 +16,4 @@ public class UserDto {
     @Email
     @NotBlank
     private String email;
-    //private List<Review> reviews;
 }

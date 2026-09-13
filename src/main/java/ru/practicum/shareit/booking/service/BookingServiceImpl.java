@@ -61,12 +61,20 @@ public class BookingServiceImpl implements BookingService {
             );
         }
 
-        Booking booking = new Booking();
-        booking.setItem(item);
-        booking.setBooker(user);
-        booking.setStart(bookingDto.getStart());
-        booking.setEnd(bookingDto.getEnd());
-        booking.setStatus(BookingStatus.WAITING);
+        boolean bookingExists =
+                bookingRepository.existsByItemIdAndStartBeforeAndEndAfter(
+                        item.getId(),
+                        bookingDto.getEnd(),
+                        bookingDto.getStart()
+                );
+
+        if (bookingExists) {
+            throw new ValidateException(
+                    "На выбранное время вещь уже забронирована"
+            );
+        }
+
+        Booking booking = BookingMapper.toBooking(bookingDto, item, user);
 
         Booking savedBooking = bookingRepository.save(booking);
 
@@ -144,11 +152,15 @@ public class BookingServiceImpl implements BookingService {
             );
         }
 
-        if (approved) {
-            booking.setStatus(BookingStatus.APPROVED);
-        } else {
-            booking.setStatus(BookingStatus.REJECTED);
+        if (booking.getStatus() != BookingStatus.WAITING) {
+            throw new ValidateException(
+                    "Бронирование уже было обработано"
+            );
         }
+
+        booking.setStatus(
+                approved ? BookingStatus.APPROVED : BookingStatus.REJECTED
+        );
 
         Booking savedBooking = bookingRepository.save(booking);
 

@@ -4,7 +4,6 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ItemService {
 
@@ -20,5 +19,5 @@ public interface ItemService {
 
     ItemDto deleteItem(ItemDto item, Long userId);
 
-    CommentDto createComment(Long userId, Long itemId, Map<String, String> body);
+    CommentDto createComment(Long userId, Long itemId, String text);
 }

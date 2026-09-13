@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.NewCommentDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -48,9 +49,9 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto createComment(@PathVariable("itemId") Long itemId,
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestBody Map<String, String> body) {
+                                    @RequestBody NewCommentDto commentDto) {
         log.info("Добавление комментария к вещи " + itemId);
-        return itemService.createComment(userId, itemId, body);
+        return itemService.createComment(userId, itemId, commentDto.getText());
     }
 
 
