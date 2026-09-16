@@ -26,32 +26,53 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Transactional
     @Override
-    public ItemRequestDto createNewRequest(Long userId, NewItemRequestDto newItemRequestDto) {
+    public ItemRequestDto createNewRequest(
+            Long userId,
+            NewItemRequestDto newItemRequestDto
+    ) {
         log.info("Добавление нового запроса");
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
-                "User с id: " + userId + " не существует"
-        ));
 
-        ItemRequest itemRequest = itemRequestRepository.save(ItemRequestMapper.toItemRequest(
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(
+                        "User с id: " + userId + " не существует"
+                ));
+
+        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(
                 newItemRequestDto.getDescription(),
                 user
-        ));
+        );
 
-        return ItemRequestMapper.itemRequestDto(itemRequest);
+        ItemRequest savedRequest = itemRequestRepository.save(itemRequest);
+
+        return ItemRequestMapper.toItemRequestDto(savedRequest);
     }
 
     @Override
     public List<ItemRequestDto> getRequestByUser(Long userId) {
-        return List.of();
+        return itemRequestRepository.findAllByRequestor_Id(userId)
+                .stream()
+                .map(ItemRequestMapper::toItemRequestDto)
+                .toList();
     }
 
     @Override
     public List<ItemRequestDto> getAllRequests() {
-        return List.of();
+        return itemRequestRepository.findAll()
+                .stream()
+                .map(ItemRequestMapper::toItemRequestDto)
+                .toList();
     }
 
     @Override
-    public ItemRequestDto getRequestById(Long requestId) {
-        return null;
+    public ItemRequestDto getRequestById(Long requestId, Long userId) {
+        ItemRequest itemRequest = itemRequestRepository
+                .findByIdAndRequestor_Id(requestId, userId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Запрос с id: " + requestId +
+                                " user с id: " + userId +
+                                " не найден"
+                ));
+
+        return ItemRequestMapper.toItemRequestDto(itemRequest);
     }
 }

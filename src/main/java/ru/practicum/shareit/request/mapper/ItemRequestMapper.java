@@ -4,12 +4,15 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
+
 public class ItemRequestMapper {
 
-    public static ItemRequestDto itemRequestDto(ItemRequest itemRequest) {
+    public static ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
         return new ItemRequestDto(
                 itemRequest.getId(),
-                itemRequest.getDescription()
+                itemRequest.getDescription(),
+                itemRequest.getCreated()
         );
     }
 
@@ -17,7 +20,8 @@ public class ItemRequestMapper {
         ItemRequest itemRequest = new ItemRequest();
 
         itemRequest.setDescription(description);
-        itemRequest.setRequestorId(user);
+        itemRequest.setRequestor(user);
+        itemRequest.setCreated(LocalDateTime.now());
 
         return itemRequest;
     }

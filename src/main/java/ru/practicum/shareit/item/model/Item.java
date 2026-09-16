@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import ru.practicum.shareit.request.model.ItemRequest;
 
 @Data
 @Entity
@@ -16,5 +17,8 @@ public class Item {
     private String description;
     @Column(nullable = false)
     private Long owner;
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private ItemRequest request;
     private Boolean available;
 }

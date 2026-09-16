@@ -18,6 +18,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -35,6 +37,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemDto getItemById(Long itemId, Long userId) {
@@ -167,18 +170,32 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(savedItem);
     }
 
-    @Override
     @Transactional
+    @Override
     public ItemDto addItem(ItemDto itemDto, Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
-                "User с ID: " + userId + " не существует"
-        ));
-        Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(userId);
-        item = itemRepository.save(item);
-        log.info("Сохранен item с id {}", item.getId());
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(
+                        "User с id: " + userId + " не существует"
+                ));
 
-        return ItemMapper.toItemDto(item);
+        ItemRequest request = null;
+
+        if (itemDto.getRequestId() != null) {
+            request = itemRequestRepository.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException(
+                            "Запрос с id: " + itemDto.getRequestId() + " не существует"
+                    ));
+        }
+
+        Item item = ItemMapper.toItem(
+                itemDto,
+                userId,
+                request
+        );
+
+        Item savedItem = itemRepository.save(item);
+
+        return ItemMapper.toItemDto(savedItem);
     }
 
     @Override
@@ -196,12 +213,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto deleteItem(ItemDto itemDto, Long userId) {
-        Item item = ItemMapper.toItem(itemDto);
-        itemRepository.findById(item.getId())
+        Item item = itemRepository.findById(itemDto.getId())
                 .orElseThrow(() -> new NotFoundException(
-                "Item с ID " + item.getId() + " не существует"
+                        "Item с ID " + itemDto.getId() + " не существует"
                 ));
+
         checkItemOwner(item, userId);
+
         itemRepository.delete(item);
 
         return ItemMapper.toItemDto(item);

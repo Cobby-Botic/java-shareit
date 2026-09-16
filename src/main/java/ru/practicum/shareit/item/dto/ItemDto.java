@@ -16,6 +16,7 @@ public class ItemDto {
     private String name;
     @NotBlank
     private String description;
+    private Long requestId;
     @NotNull
     private Boolean available;
     private BookingShortDto lastBooking;
