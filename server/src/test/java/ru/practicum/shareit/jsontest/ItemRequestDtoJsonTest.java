@@ -17,6 +17,7 @@ class ItemRequestDtoJsonTest {
 
     @Autowired
     private JacksonTester<ItemRequestDto> json;
+
     @Test
     void shouldSerializeItemRequestDto() throws Exception {
         ItemShortDto item = new ItemShortDto(
