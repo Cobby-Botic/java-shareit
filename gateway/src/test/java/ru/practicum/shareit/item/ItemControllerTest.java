@@ -213,7 +213,7 @@ class ItemControllerTest {
         when(itemClient.createComment(
                 userId,
                 itemId,
-                "Отличная дрель"
+                commentDto
         )).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(post("/items/{itemId}/comment", itemId)
@@ -223,7 +223,7 @@ class ItemControllerTest {
                 .andExpect(status().isOk());
 
         verify(itemClient)
-                .createComment(userId, itemId, "Отличная дрель");
+                .createComment(userId, itemId, commentDto);
     }
 
     @Test
@@ -238,6 +238,6 @@ class ItemControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(itemClient, never())
-                .createComment(anyLong(), anyLong(), anyString());
+                .createComment(anyLong(), anyLong(), any(NewCommentDto.class));
     }
 }
