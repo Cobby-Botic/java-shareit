@@ -12,7 +12,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,31 +55,38 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(UserDto userDto, Long userId) {
 
         User user = UserMapper.toUser(userDto);
+
         User currentUser = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User с ID " + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException(
+                        "User с ID " + userId + " не найден"
+                ));
 
         if (user.getName() != null) {
             currentUser.setName(user.getName());
         }
 
         if (user.getEmail() != null) {
-            Optional<User> userEmail = userRepository.findAll().stream()
-                            .filter(user1 -> user1.getEmail().equals(user.getEmail()))
-                                    .findAny();
-            if (userEmail.isPresent()) {
-                throw new EmailDuplicateException("Пользователь с почтой" + user.getEmail() +
-                        " уже зарегистрирован в системе");
+            if (userRepository.existsByEmailAndIdNot(user.getEmail(), userId)) {
+                throw new EmailDuplicateException(
+                        "Пользователь с почтой " + user.getEmail() +
+                                " уже зарегистрирован в системе"
+                );
             }
+
             currentUser.setEmail(user.getEmail());
         }
+
         return UserMapper.toUserDto(currentUser);
     }
 
     @Transactional
     @Override
     public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User с id " +
-                " не найден"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(
+                () -> new NotFoundException(
+                        "User с id " + userId + " не найден"
+                ));
         userRepository.delete(user);
     }
 }

@@ -52,4 +52,10 @@ public class BookingController {
 		log.info("Get booking {}, userId={}", bookingId, userId);
 		return bookingClient.getBooking(userId, bookingId);
 	}
+
+    @GetMapping("/owner")
+    public ResponseEntity<Object> getBookingOwner(@RequestHeader("X-Sharer-User-Id") long userId) {
+        log.info("Get booking by owner {}", userId);
+        return bookingClient.getBookingsByOwner(userId);
+    }
 }

@@ -90,6 +90,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     private List<ItemRequestDto> toItemRequestDtos(List<ItemRequest> requests) {
+        if (requests.isEmpty()) {
+            return List.of();
+        }
+
         List<Long> requestIds = requests.stream()
                 .map(ItemRequest::getId)
                 .toList();
