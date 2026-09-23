@@ -590,9 +590,9 @@ public class BookingServiceImplTest {
         User user = new User();
         user.setId(userId);
 
-        Long bookerid = 4l;
+        Long bookerId = 4L;
         User booker = new User();
-        booker.setId(bookerid);
+        booker.setId(bookerId);
 
         Long itemId = 6L;
         Item item = new Item();
@@ -752,9 +752,9 @@ public class BookingServiceImplTest {
         User user = new User();
         user.setId(userId);
 
-        Long bookerid = 4l;
+        Long bookerId = 4L;
         User booker = new User();
-        booker.setId(bookerid);
+        booker.setId(bookerId);
 
         Long itemId = 6L;
         Item item = new Item();
