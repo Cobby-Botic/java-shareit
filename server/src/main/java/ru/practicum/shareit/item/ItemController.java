@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.NewCommentDto;
-import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.service.item.ItemService;
 
 import java.util.List;
 
