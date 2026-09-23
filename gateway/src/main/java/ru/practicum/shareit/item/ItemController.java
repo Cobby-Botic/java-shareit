@@ -53,7 +53,7 @@ public class ItemController {
         return itemClient.createComment(
                 userId,
                 itemId,
-                commentDto.getText()
+                commentDto
         );
     }
 
