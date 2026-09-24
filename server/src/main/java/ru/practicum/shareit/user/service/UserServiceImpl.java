@@ -1,4 +1,4 @@
-package ru.practicum.shareit.service.user;
+package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;

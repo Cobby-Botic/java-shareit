@@ -1,4 +1,4 @@
-package ru.practicum.shareit.service.booking;
+package ru.practicum.shareit.booking.service;
 
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.NewBookingDto;

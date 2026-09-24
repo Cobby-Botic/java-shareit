@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.ValidationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +38,11 @@ public class BookingController {
 	public ResponseEntity<Object> bookItem(@RequestHeader("X-Sharer-User-Id") long userId,
 			@RequestBody @Valid BookItemRequestDto requestDto) {
 		log.info("Creating booking {}, userId={}", requestDto, userId);
+        if (!requestDto.getStart().isBefore(requestDto.getEnd())) {
+            throw new ValidationException(
+                    "Дата начала должна быть раньше даты окончания"
+            );
+        }
 		return bookingClient.bookItem(userId, requestDto);
 	}
 

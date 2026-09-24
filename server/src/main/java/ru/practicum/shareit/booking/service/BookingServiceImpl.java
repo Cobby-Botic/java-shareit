@@ -1,4 +1,4 @@
-package ru.practicum.shareit.service.booking;
+package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,12 +52,6 @@ public class BookingServiceImpl implements BookingService {
         if (!item.getAvailable()) {
             throw new ValidateException(
                     "Нельзя забронировать недоступную вещь"
-            );
-        }
-
-        if (!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
-            throw new ValidateException(
-                    "Дата начала должна быть раньше даты окончания"
             );
         }
 

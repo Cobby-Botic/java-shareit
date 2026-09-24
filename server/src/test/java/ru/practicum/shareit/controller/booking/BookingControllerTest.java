@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.BookingController;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.NewBookingDto;
-import ru.practicum.shareit.service.booking.BookingService;
+import ru.practicum.shareit.booking.service.BookingService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,23 +55,6 @@ class BookingControllerTest {
 
         verify(bookingService)
                 .addBooking(any(NewBookingDto.class), eq(userId));
-    }
-
-    @Test
-    void addBookingShouldReturnBadRequestWhenStartIsInPast() throws Exception {
-        NewBookingDto bookingDto = new NewBookingDto();
-        bookingDto.setItemId(10L);
-        bookingDto.setStart(LocalDateTime.now().minusDays(1));
-        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
-
-        mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(bookingDto)))
-                .andExpect(status().isBadRequest());
-
-        verify(bookingService, never())
-                .addBooking(any(NewBookingDto.class), anyLong());
     }
 
     @Test

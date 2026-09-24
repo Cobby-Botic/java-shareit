@@ -16,6 +16,7 @@ import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.item.exception.NotOwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.booking.service.BookingServiceImpl;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -228,45 +229,6 @@ public class BookingServiceImplTest {
         );
 
         assertEquals("Нельзя забронировать недоступную вещь", exception.getMessage());
-        verify(bookingRepository, never())
-                .save(any());
-    }
-
-    @Test
-    void createNewBookingShouldThrowWhenStartIsAfterEnd() {
-        Long userId = 1L;
-
-        User user = new User();
-        user.setId(userId);
-        user.setName("Daniel");
-        user.setEmail("daniel@test.ru");
-
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
-
-        Long itemId = 20L;
-
-        Item item = new Item();
-        item.setId(itemId);
-        item.setName("Дрель");
-        item.setDescription("Обычная дрель");
-        item.setAvailable(true);
-        item.setOwner(2L);
-
-        when(itemRepository.findById(itemId))
-                .thenReturn(Optional.of(item));
-
-        NewBookingDto bookingDto = new NewBookingDto();
-        bookingDto.setItemId(itemId);
-        bookingDto.setStart(LocalDateTime.of(2026, 1, 2, 0, 0));
-        bookingDto.setEnd(LocalDateTime.of(2026, 1, 1, 0, 0));
-
-        ValidateException exception = assertThrows(
-                ValidateException.class,
-                () -> bookingService.addBooking(bookingDto, userId)
-        );
-
-        assertEquals("Дата начала должна быть раньше даты окончания", exception.getMessage());
         verify(bookingRepository, never())
                 .save(any());
     }

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.integration.booking;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +10,9 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.NewBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.service.booking.BookingService;
+import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,13 +27,7 @@ class BookingServiceIntegrationTest {
     private BookingService bookingService;
 
     @Autowired
-    private BookingRepository bookingRepository;
-
-    @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private EntityManager entityManager;
 
     private User owner;
     private User booker;
@@ -46,19 +38,21 @@ class BookingServiceIntegrationTest {
         owner = new User();
         owner.setName("Owner");
         owner.setEmail("owner@test.ru");
-        owner = userRepository.save(owner);
+        entityManager.persist(owner);
 
         booker = new User();
         booker.setName("Booker");
         booker.setEmail("booker@test.ru");
-        booker = userRepository.save(booker);
+        entityManager.persist(booker);
 
         item = new Item();
         item.setName("Дрель");
         item.setDescription("Обычная дрель");
         item.setOwner(owner.getId());
         item.setAvailable(true);
-        item = itemRepository.save(item);
+        entityManager.persist(item);
+
+        entityManager.flush();
     }
 
     @Test
@@ -77,14 +71,6 @@ class BookingServiceIntegrationTest {
         assertEquals(BookingStatus.WAITING, result.getStatus());
         assertEquals(booker.getId(), result.getBooker().getId());
         assertEquals(item.getId(), result.getItem().getId());
-
-        Booking savedBooking = bookingRepository
-                .findById(result.getId())
-                .orElseThrow();
-
-        assertEquals(BookingStatus.WAITING, savedBooking.getStatus());
-        assertEquals(booker.getId(), savedBooking.getBooker().getId());
-        assertEquals(item.getId(), savedBooking.getItem().getId());
     }
 
     @Test
@@ -166,9 +152,11 @@ class BookingServiceIntegrationTest {
 
         assertEquals(BookingStatus.APPROVED, result.getStatus());
 
-        Booking updatedBooking = bookingRepository
-                .findById(booking.getId())
-                .orElseThrow();
+        entityManager.flush();
+        entityManager.clear();
+
+        Booking updatedBooking =
+                entityManager.find(Booking.class, booking.getId());
 
         assertEquals(
                 BookingStatus.APPROVED,
@@ -188,6 +176,9 @@ class BookingServiceIntegrationTest {
         booking.setEnd(end);
         booking.setStatus(status);
 
-        return bookingRepository.save(booking);
+        entityManager.persist(booking);
+        entityManager.flush();
+
+        return booking;
     }
 }

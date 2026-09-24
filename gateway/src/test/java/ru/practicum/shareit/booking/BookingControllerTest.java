@@ -208,4 +208,24 @@ class BookingControllerTest {
         verify(bookingClient, never())
                 .bookItem(anyLong(), any(BookItemRequestDto.class));
     }
+
+    @Test
+    void bookItemShouldReturnBadRequestWhenStartIsAfterEnd() throws Exception {
+        Long userId = 1L;
+
+        BookItemRequestDto requestDto = new BookItemRequestDto(
+                10L,
+                LocalDateTime.now().plusDays(2),
+                LocalDateTime.now().plusDays(1)
+        );
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(bookingClient, never())
+                .bookItem(anyLong(), any(BookItemRequestDto.class));
+    }
 }

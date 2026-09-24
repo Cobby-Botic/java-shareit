@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.EmailDuplicateException;
 import ru.practicum.shareit.user.model.User;
